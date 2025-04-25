@@ -1,0 +1,65 @@
+
+<head>
+   <title>IHRoutingMap</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=yes" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css">
+    <!--
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.39/moment-timezone-with-data.min.js"></script>
+	-->
+	<script src="https://js.arcgis.com/4.23/"></script>
+    <script>
+      require(["esri/config","esri/Map", "esri/views/MapView"], function (esriConfig,Map, MapView) {
+
+      });
+    </script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
+
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js'></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+   
+</head>
+<body>
+  <div id="appContainer">
+    <!-- Left Info Panel -->
+    <div id="leftPanel">
+      <h3 id="title">Interior Health Routing</h3>
+
+      <div id="instructions">
+        <p style="font-size: 1.2em;"><strong>Welcome!</strong></p>
+        <p style="font-size: 0.95em;">Use the dropdown menus to explore different route options.</p>
+        <p style="font-size: 0.95em;">
+          Select a route from the <strong>Facility Route</strong> dropdown to display healthcare facilities .
+        </p>
+        <p style="font-size: 0.95em; color: #555;">
+          Filter route options to view up to 2 alternate journeys between the selected health care facilities.
+        </p>
+      </div>
+
+      <!-- Legend -->
+      <div id="legendContainer"></div>
+
+      <!-- Dropdowns -->
+      <div id="dropdownContainer">
+        <label for="odRouteSelect"><strong>Select Facility Route:</strong></label><br>
+        <select id="odRouteSelect" style="width: 100%; margin-bottom: 15px;"></select><br>
+
+        <div id="routeRankingContainer">
+          <label><strong>Filter Route Options:</strong></label>
+          <div id="routeRankingCheckboxes"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Map Panel -->
+    <div id="rightPanel">
+      <div id="viewDiv"></div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+
