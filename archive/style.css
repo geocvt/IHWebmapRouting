@@ -39,26 +39,11 @@ html, body {
   z-index: 1;
 }
 
-.title-container {
-  background-color: #164d81; /* soft blue */
-  padding: 16px;
-  border-radius: 12px;
-  text-align: left;
-  margin-bottom: 20px;
-}
-
+/* Title styling */
 #title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: bolder;
-  color: white; /* darker blue text */
-}
-
-#subtitle {
-  margin: 8px 0 0 0;
-  font-size: 17px;
-  font-weight: normal;
-  color: white;
+  font-size: 26px;
+  color: #1e1e79;
+  margin-bottom: 16px;
 }
 
 /* Instruction styling */
@@ -68,7 +53,6 @@ html, body {
   border-radius: 10px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   margin-bottom: 16px;
-  color: #164d81;
 }
 
 /* Dropdown container */
@@ -78,7 +62,6 @@ html, body {
   border-radius: 8px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.3);
   margin-top: 16px;
-  color: #164d81;
 }
 
 /* Legend */
@@ -88,7 +71,6 @@ html, body {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  color: #164d81;
 }
 
 /* Checkbox container styles (unchanged) */
@@ -98,7 +80,6 @@ html, body {
   background: none;
   box-shadow: none;
   border: none;
-  color: #164d81;
 }
 .checkbox-wrapper {
   display: flex;
@@ -135,31 +116,5 @@ html, body {
   background-color: gray;
   flex-shrink: 0;
 }
-.route-summary-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 0.9em;
-  margin-top: 8px;
-}
 
-.route-summary-table th,
-.route-summary-table td {
-  border: 1px solid #ccc;
-  padding: 4px 8px;
-}
 
-.route-summary-table th {
-  background-color: #f5f5f5;
-}
-
-/* Align the first column (Ranking) to the right */
-.route-summary-table td:first-child,
-.route-summary-table th:first-child {
-  text-align: left;
-}
-
-/* Align the second column (Length) to the center */
-.route-summary-table td:nth-child(2),
-.route-summary-table th:nth-child(2) {
-  text-align: center;
-}

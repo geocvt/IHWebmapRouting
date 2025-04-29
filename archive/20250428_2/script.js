@@ -53,7 +53,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		color: "#0fb443",  // green!
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Business as usual route (best option)"
 	},
 	{
 	  value: "Direct Route if critical area closed (second best option)",
@@ -62,7 +63,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		color: "#efd647",  // yellow/orange
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Direct Route if critical area closed (second best option)"
 	},
 	{
 	  value: "Reroute if both critical areas are closed (third option)",
@@ -71,9 +73,11 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		color: "#98282a",  // red
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Reroute if both critical areas are closed (third option)"
 	}
-	]  
+	]
+	  
 	};
 
 	//Load in route lines
@@ -411,57 +415,13 @@ function updateRouteFilter() {
     // query the filtered route IDs to update the barriers layer
     const query = routesFL.createQuery();
     query.where = routeExpr;
-    query.outFields = ["Route_ID", "Route_Ranking", "RouteLength_KM"];
+    query.outFields = ["Route_ID", "Route_Ranking"];
     query.returnGeometry = false;
 
     routesFL.queryFeatures(query).then(function(response) {
-      const summaryContainer = document.getElementById("routeSummaryList");
-		summaryContainer.innerHTML = ""; // Clear previous
-
-		const features = response.features;
-		features.sort((a, b) => a.attributes.Route_Ranking.localeCompare(b.attributes.Route_Ranking));
-
-		const displayedRankings = new Set();
-
-		// Create a table
-		const table = document.createElement("table");
-		table.className = "route-summary-table";
-
-		const thead = document.createElement("thead");
-		thead.innerHTML = "<tr><th>Route</th><th>Length (km)</th></tr>";
-		table.appendChild(thead);
-
-		const tbody = document.createElement("tbody");
-
-		features.forEach(f => {
-		  const ranking = f.attributes.Route_Ranking;
-		  const length_km = (f.attributes.RouteLength_KM).toFixed(1);
-
-		  if (!displayedRankings.has(ranking)) {
-			const row = document.createElement("tr");
-
-			const rankingCell = document.createElement("td");
-			rankingCell.textContent = ranking;
-			rankingCell.style.color = routeRankingStyles[ranking] || "#333";
-
-			const lengthCell = document.createElement("td");
-			lengthCell.textContent = `${length_km}`;
-
-			row.appendChild(rankingCell);
-			row.appendChild(lengthCell);
-			tbody.appendChild(row);
-
-			displayedRankings.add(ranking);
-		  }
-		});
-
-		table.appendChild(tbody);
-		summaryContainer.appendChild(table);
-
-		
       const routeIDs = [...new Set(response.features.map(f => `'${f.attributes.Route_ID}'`))];
       const routeRankings = [...new Set(response.features.map(f => `'${f.attributes.Route_Ranking}'`))];
-		
+
       if (routeIDs.length && routeRankings.length) {
         barriersFL.definitionExpression = `Route_ID IN (${routeIDs.join(",")}) AND Route_Ranking IN (${routeRankings.join(",")})`;
         // Query how many features match
@@ -484,11 +444,8 @@ function updateRouteFilter() {
     routesFL.visible = false;
     barriersFL.definitionExpression = "1=0";
     barriersFL.visible = false;
-	document.getElementById("routeSummaryList").innerHTML = "";
   }
 }
-
-
 
 	
 	

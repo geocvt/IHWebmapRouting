@@ -23,37 +23,22 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	var view = new MapView({
         map: webmap,
         container: "viewDiv",
-		
     });
-	
-	view.constraints = {
-  geometry: {
-    type: "extent",
-    xmin: -139.2,   // west edge
-    ymin: 48.2,     // south edge
-    xmax: -114.0,   // east edge
-    ymax: 60.0,     // north edge
-    spatialReference: { wkid: 4326 } // WGS84 lat/lon
-  },
-
-  minScale: 5000000, //dont zoom out beyond a scale of 1:5,000,000
-  maxScale: 0, //  can overzoom tiles
-  rotationEnabled: false // Disables map rotation
-};
 	
 	//Routes symbology
 	const routesRenderer = {
-	type: "unique-value",  //  UniqueValueRenderer() for symbology
+	type: "unique-value",  // autocasts as new UniqueValueRenderer()
 	field: "Route_Ranking",
 	uniqueValueInfos: [
 	{
 	  value: "Business as usual route (best option)",
 	  symbol: {
 		type: "simple-line",
-		color: "#0fb443",  // green!
+		color: "#0fb443",  // green
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Business as usual route (best option)"
 	},
 	{
 	  value: "Direct Route if critical area closed (second best option)",
@@ -62,7 +47,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		color: "#efd647",  // yellow/orange
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Direct Route if critical area closed (second best option)"
 	},
 	{
 	  value: "Reroute if both critical areas are closed (third option)",
@@ -71,9 +57,11 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		color: "#98282a",  // red
 		width: 2,
 		style: "solid"
-	  }
+	  },
+	  label: "Reroute if both critical areas are closed (third option)"
 	}
-	]  
+	]
+	  
 	};
 
 	//Load in route lines
@@ -88,93 +76,20 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	
 	view.map.add(routesFL);
 	
-	//Hubs and facilities symbology
+		//Hubs and facilities symbology
 	const facilitiesRenderer = {
-	  type: "simple",
-	  symbol: {
-		type: "cim", // CIMSymbol lets you stack multiple symbol layers
-		data: {
-		  type: "CIMSymbolReference",
-		  symbol: {
-			type: "CIMPointSymbol",
-			symbolLayers: [
-			  {
-				type: "CIMVectorMarker",
-				enable: true,
-				size: 10, // adjust overall size
-				frame: {
-				  xmin: -8,
-				  ymin: -8,
-				  xmax: 8,
-				  ymax: 8
-				},
-				markerGraphics: [
-				  {
-					type: "CIMMarkerGraphic",
-					geometry: {
-					  rings: [
-						[
-						  [0, 8],
-						  [5.656, 5.656],
-						  [8, 0],
-						  [5.656, -5.656],
-						  [0, -8],
-						  [-5.656, -5.656],
-						  [-8, 0],
-						  [-5.656, 5.656],
-						  [0, 8]
-						]
-					  ]
-					},
-					symbol: {
-					  type: "CIMPolygonSymbol",
-					  symbolLayers: [
-						{
-						  type: "CIMSolidFill",
-						  enable: true,
-						  color: [77, 134, 146, 255] // Light blue fill (RGB + Alpha)
-						}
-					  ],
-					  geometricEffects: [
-						{
-						  type: "CIMGeometricEffectBuffer",
-						  method: "circle",
-						  distance: 6,
-						  cornerCount: 100 // <<-- This makes it a smoother circle
-						}
-					  ]
-					}
-				  },
-				  {
-					type: "CIMMarkerGraphic",
-					geometry: {
-					  paths: [
-						[[-4, 0], [4, 0]], // horizontal line of cross
-						[[0, -4], [0, 4]]  // vertical line of cross
-					  ]
-					},
-					symbol: {
-					  type: "CIMLineSymbol",
-					  symbolLayers: [
-						{
-						  type: "CIMSolidStroke",
-						  enable: true,
-						  color: [255, 255, 255, 255], // White color
-						  width: 2.4,
-							capStyle: "butt"
-						}
-					  ]
-					}
-				  }
-				]
-			  }
-			]
-		  }
-		}
-	  },
-	  label: "Health Facilities"
+		type: "simple",  // autocasts as new SimpleRenderer()
+		symbol: {
+			type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+			size: 6,
+			color: "red",
+			outline: {  // autocasts as new SimpleLineSymbol()
+				width: 0.5,
+				color: "white"
+			}
+		},
+		label: "Health Facilities" 
 	};
-	
 	//Load in hubs and facilities
 	var facilitiesFL = new FeatureLayer({
 		portalItem:{id: HubsandFacilitiesPortalID},
@@ -189,9 +104,9 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		},
 			symbol: {
 			type: "text",  // autocasts as new TextSymbol()
-			color: [77, 134, 146],
+			color: "red",
 			haloColor: "white",
-			haloSize: "2px",
+			haloSize: "1px",
 			font: {
 			size: 10,
 			family: "Arial"
@@ -208,10 +123,14 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	const barriersRenderer = {
 		type: "simple",  // autocasts as new SimpleRenderer()
 		symbol: {
-			type: "picture-marker",  // Use a picture marker to mimic the road caution symbol
-			url: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Slovenia_road_sign_II-4.svg",
-			width: "12px",
-			height: "12px"
+			type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+			style: "x",
+			size: 6,
+			color: "black",
+			outline: {
+      			width: 2,     // Thicker outline for contrast
+      			color: "black"
+    		}
 		},
 		label: "Critical Point - Causing Reroute" 
 	};
@@ -233,6 +152,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		layerInfos: [
 		  {
 			layer: barriersFL,
+			//title: "My Useful Layer"
 		  },
 		  {
 			layer: facilitiesFL,
@@ -240,29 +160,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		  // Don't include routesFL here so that it doesnt show up in the legend
 		]
 	  });
-	
-	// function to check if any legend layers are visible
-	function updateLegendVisibility() {
-	  const hasVisibleLayers = legend.layerInfos.some(info => {
-		return info.layer.visible;
-	  });
-
-	  const legendDiv = document.getElementById("legendContainer");
-	  if (hasVisibleLayers) {
-		legendDiv.style.display = "block"; // Show the legend
-	  } else {
-		legendDiv.style.display = "none"; // Hide the legend
-	  }
-	}
-
-	// Watch for changes in the layers' visibility
-	legend.layerInfos.forEach(info => {
-	  info.layer.watch("visible", updateLegendVisibility);
-	});
-
-	// Initial check
-	updateLegendVisibility();
-	
+		
 	routesFL.queryFeatureCount().then(count => {
   	console.log("Routes feature count:", count);
 });
@@ -408,83 +306,29 @@ function updateRouteFilter() {
     routesFL.definitionExpression = routeExpr;
     routesFL.visible = true;
 
-    // query the filtered route IDs to update the barriers layer
+    // Now query the filtered route IDs to update the barriers layer
     const query = routesFL.createQuery();
     query.where = routeExpr;
-    query.outFields = ["Route_ID", "Route_Ranking", "RouteLength_KM"];
+    query.outFields = ["Route_ID", "Route_Ranking"];
     query.returnGeometry = false;
 
     routesFL.queryFeatures(query).then(function(response) {
-      const summaryContainer = document.getElementById("routeSummaryList");
-		summaryContainer.innerHTML = ""; // Clear previous
-
-		const features = response.features;
-		features.sort((a, b) => a.attributes.Route_Ranking.localeCompare(b.attributes.Route_Ranking));
-
-		const displayedRankings = new Set();
-
-		// Create a table
-		const table = document.createElement("table");
-		table.className = "route-summary-table";
-
-		const thead = document.createElement("thead");
-		thead.innerHTML = "<tr><th>Route</th><th>Length (km)</th></tr>";
-		table.appendChild(thead);
-
-		const tbody = document.createElement("tbody");
-
-		features.forEach(f => {
-		  const ranking = f.attributes.Route_Ranking;
-		  const length_km = (f.attributes.RouteLength_KM).toFixed(1);
-
-		  if (!displayedRankings.has(ranking)) {
-			const row = document.createElement("tr");
-
-			const rankingCell = document.createElement("td");
-			rankingCell.textContent = ranking;
-			rankingCell.style.color = routeRankingStyles[ranking] || "#333";
-
-			const lengthCell = document.createElement("td");
-			lengthCell.textContent = `${length_km}`;
-
-			row.appendChild(rankingCell);
-			row.appendChild(lengthCell);
-			tbody.appendChild(row);
-
-			displayedRankings.add(ranking);
-		  }
-		});
-
-		table.appendChild(tbody);
-		summaryContainer.appendChild(table);
-
-		
       const routeIDs = [...new Set(response.features.map(f => `'${f.attributes.Route_ID}'`))];
       const routeRankings = [...new Set(response.features.map(f => `'${f.attributes.Route_Ranking}'`))];
-		
+
       if (routeIDs.length && routeRankings.length) {
         barriersFL.definitionExpression = `Route_ID IN (${routeIDs.join(",")}) AND Route_Ranking IN (${routeRankings.join(",")})`;
-        // Query how many features match
-        barriersFL.queryFeatureCount().then(count => {
-			if (count > 0) {
-				barriersFL.visible = true;
-			} else {
-				barriersFL.visible = false;
-			}
-			barriersFL.refresh();
-		});
-	  } else {
-	  barriersFL.definitionExpression = "1=0";
-	  barriersFL.visible = false;
-	  barriersFL.refresh();
-	}
-
+        barriersFL.visible = true;
+        barriersFL.refresh();
+      } else {
+        barriersFL.definitionExpression = "1=0";
+        barriersFL.visible = false;
+      }
     });
   } else {
     routesFL.visible = false;
     barriersFL.definitionExpression = "1=0";
     barriersFL.visible = false;
-	document.getElementById("routeSummaryList").innerHTML = "";
   }
 }
 
