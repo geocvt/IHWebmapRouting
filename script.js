@@ -4,14 +4,14 @@
 /*global document*/
 
 //ESRI modules used
-require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/widgets/Search", "esri/layers/RouteLayer","esri/rest/support/PolygonBarrier","esri/rest/support/FeatureSet","esri/rest/support/PointBarrier","esri/rest/support/RouteParameters","esri/rest/route","esri/layers/FeatureLayer","esri/rest/support/Query","esri/rest/support/Stop","esri/rest/support/RouteInfo","esri/core/Collection","esri/rest/support/TravelMode","esri/rest/networkService","esri/rest/support/DirectionPoint","esri/PopupTemplate","esri/widgets/LayerList","esri/widgets/Legend","esri/widgets/Locate","esri/widgets/Track","esri/widgets/Expand","esri/core/watchUtils","esri/geometry/Point","./config.js"]
-, function (Graphic,esriConfig,WebMap,MapView,Search,RouteLayer,PolygonBarrier,FeatureSet,PointBarrier,RouteParameters,route,FeatureLayer,Query,Stop,RouteInfo,Collection,TravelMode,networkService,DirectionPoint,PopupTemplate,LayerList,Legend,Locate,Track,Expand,watchUtils,Point,config) {
+require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/widgets/Search", "esri/layers/RouteLayer","esri/rest/support/PolygonBarrier","esri/rest/support/FeatureSet","esri/rest/support/PointBarrier","esri/rest/support/RouteParameters","esri/rest/route","esri/layers/FeatureLayer","esri/rest/support/Query","esri/rest/support/Stop","esri/rest/support/RouteInfo","esri/core/Collection","esri/rest/support/TravelMode","esri/rest/networkService","esri/rest/support/DirectionPoint","esri/PopupTemplate","esri/widgets/LayerList","esri/widgets/Legend","esri/widgets/Locate","esri/widgets/Track","esri/widgets/Expand","esri/core/watchUtils","esri/geometry/Point","./config.js", "esri/layers/TileLayer", "esri/layers/VectorTileLayer", "esri/smartMapping/renderers/color"]
+, function (Graphic,esriConfig,WebMap,MapView,Search,RouteLayer,PolygonBarrier,FeatureSet,PointBarrier,RouteParameters,route,FeatureLayer,Query,Stop,RouteInfo,Collection,TravelMode,networkService,DirectionPoint,PopupTemplate,LayerList,Legend,Locate,Track,Expand,watchUtils,Point,config,TileLayer,VectorTileLayer, colorRendererCreator) {
 
 	//API key and portal URL 
     esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurBsWhH_7CMZdbIHG4U1Lc__ohsJyE7rLZgvS4CjZQ2WV5iNfVF2daFQcyi2wO9Ej99IKv3VNTFvNvtgkncF8jhEl4tbOgeOhuVW70cmOi4fGokmeDdG1g32Dn_DKTy19l0x_LFUWWMI4HqgonMsLLQeEAHCI3IwnFPiNLtMrCPUR71_l_oxwEO0e14kPxsTtm5GZIELl6zgZMtg3j-nEG10.AT1_wQWC9Eha";
 	esriConfig.portalUrl = "https://lickergeo.maps.arcgis.com";
 
-	//Default basemap 
+	//basemap 
 	var webmap = new WebMap({
 
         portalItem: {
@@ -19,7 +19,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
         }
      });
 
-	////Adds the basemap and the routing layers
+	////Adds the basemap
 	var view = new MapView({
         map: webmap,
         container: "viewDiv",
@@ -40,7 +40,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
   maxScale: 0, //  can overzoom tiles
   rotationEnabled: false // Disables map rotation
 };
-	
+
+
 	//Routes symbology
 	const routesRenderer = {
 	type: "unique-value",  //  UniqueValueRenderer() for symbology
@@ -213,7 +214,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 			width: "12px",
 			height: "12px"
 		},
-		label: "Critical Point - Causing Reroute" 
+		label: "Critical Point - Causing Longest Reroute" 
 	};
 	//Load in barriers
 	var barriersFL = new FeatureLayer({
@@ -227,6 +228,72 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	
 	view.map.add(barriersFL);
 
+    //setup flood symbology
+	const floodRenderer = {
+	  type: "unique-value",
+	  field: "Id",
+	  legendOptions: {
+		title: "Flood Depth (Metres)"
+	  },
+	  uniqueValueInfos: [
+		{
+		  value: 1,
+		  symbol: {
+			type: "simple-fill",
+			color: [3, 242, 225, 0.8],  // turquoise, RGBA with 75% opacity
+			outline: {
+			  width: 0
+			}
+		  }
+		},
+		{
+		  value: 2,
+		  symbol: {
+			type: "simple-fill",
+			color: [128, 132, 232, 0.8],  // purple, RGBA with opacity
+			outline: {
+			  width: 0
+			}
+		  }
+		},
+		{
+		  value: 3,
+		  symbol: {
+			type: "simple-fill",
+			color: [245, 103, 223, 0.8],  // pink, RGBA with opacity
+			outline: {
+			  width: 0
+			}
+		  }
+		}
+	  ]
+	};
+	
+	// hazard layers (toggle(floodFL), seperate dropdown box for various selections on closuresFL)
+	//Load in flooding layer
+	var floodFL = new FeatureLayer({
+		portalItem:{id:floodingPortalID },
+		popupEnabled:false,
+		renderer: floodRenderer,
+		legendEnabled: true,
+  		title: "",
+		visible: false
+	});
+	
+	view.map.add(floodFL);
+	
+	
+	var closuresFL = new FeatureLayer({
+		portalItem:{id:closuresPortalID },
+		popupEnabled:false,
+		legendEnabled: true,
+  		title: "",
+		visible: false
+	});
+	
+	view.map.add(closuresFL);
+	
+
 	const legend = new Legend({
 		view: view,
 		container: "legendContainer",
@@ -236,11 +303,152 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		  },
 		  {
 			layer: facilitiesFL,
-		  }
+		  },
+		{
+			layer: floodFL,
+		  },
+	
+		{
+			layer: closuresFL
+		}
 		  // Don't include routesFL here so that it doesnt show up in the legend
 		]
 	  });
-	
+
+	function applyQuantileRenderer(selectedField) {
+		
+	closuresFL.visible = false;
+		
+	  closuresFL.queryFeatures({
+		where: closuresFL.definitionExpression,
+		outFields: [selectedField],
+		returnGeometry: false
+	  }).then((result) => {
+		const values = result.features
+		  .map(f => f.attributes[selectedField])
+		  .filter(v => typeof v === 'number' && !isNaN(v))
+		  .sort((a, b) => a - b);
+
+		const n = values.length;
+		if (n < 8) {
+		  console.warn("Not enough valid data to calculate 8 quantiles.");
+		  return;
+		}
+
+		const minValue = values[0];
+		const maxValue = values[n - 1];
+
+		function getQuantile(q) {
+		  const pos = q * (n - 1);
+		  const base = Math.floor(pos);
+		  const rest = pos - base;
+		  return (base + 1 < n)
+			? values[base] + rest * (values[base + 1] - values[base])
+			: values[base];
+		}
+
+		const quantiles = [];
+		for (let i = 1; i < 8; i++) {
+		  quantiles.push(getQuantile(i / 8));
+		}
+
+		const uniqueBreaks = [minValue];
+		quantiles.forEach(q => {
+		  if (q > uniqueBreaks[uniqueBreaks.length - 1]) {
+			uniqueBreaks.push(q);
+		  }
+		});
+		if (maxValue > uniqueBreaks[uniqueBreaks.length - 1]) {
+		  uniqueBreaks.push(maxValue);
+		}
+
+		const colors = [
+		  "#f2e5f7", "#e3cbe9", "#d4b1db", "#c596cd",
+		  "#b67cbf", "#a762b1", "#9848a3", "#a414b4"
+		];
+
+		const classBreakInfos = [];
+		for (let i = 0; i < uniqueBreaks.length - 1; i++) {
+		  const min = Math.round(uniqueBreaks[i]);
+		  const max = Math.round(uniqueBreaks[i + 1]);
+		  classBreakInfos.push({
+			minValue: min,
+			maxValue: max,
+			symbol: {
+			  type: "simple-line",
+			  color: colors[i % colors.length],
+			  width: 1.5 + i  // progressively thicker
+			},
+			label: `${min} – ${max}`
+		  });
+		}
+
+		// Extract the prefix before '_' in the field name
+		let fieldPrefix = selectedField.split('_')[0];
+
+		if (fieldPrefix === "Grand") {
+		  fieldPrefix = "All Types";  // Change the fieldPrefix to "All Types"
+		}
+
+		// Set the legend title 
+		const legendTitle = `Number of Road Closures – ${fieldPrefix}`;
+
+		  
+		closuresFL.renderer = {
+		  type: "class-breaks",
+		  field: selectedField,
+		  legendOptions: {
+			title: legendTitle
+		  },
+		  classBreakInfos: classBreakInfos
+		};
+		
+		closuresFL.visible = true;
+
+		console.log("Applied quantile renderer with breaks:", classBreakInfos);
+	  });
+	}
+
+
+	// Function to clear all hazard layers
+	function clearHazardLayers() {
+	  floodFL.visible = false;
+	  closuresFL.visible = false;
+	}
+
+	// Function to reset legend to only the active hazard layer
+	function updateHazardLegend(activeLayer) {
+	  legend.layerInfos = legend.layerInfos.filter(info =>
+		info.layer !== floodFL && info.layer !== closuresFL
+	  );
+
+	  if (activeLayer) {
+		legend.layerInfos.push({ layer: activeLayer });
+	  }
+
+	  updateLegendVisibility();
+	}
+
+	document.getElementById("hazardSelector").addEventListener("change", function() {
+	  const selected = this.value;
+
+	  clearHazardLayers();
+
+	  if (selected === "flood") {
+		floodFL.visible = true;
+		updateHazardLegend(floodFL);
+
+	  } else if (["Grand_Total", "Fire_Rollup", "Flooding_Rollup", "Landslide_Rollup", "Smoke_Rollup", "Snow_Avalanche_Cold_Rollup"].includes(selected)) {
+		closuresFL.visible = true;
+		closuresFL.definitionExpression = `${selected} > 0`;
+
+		applyQuantileRenderer(selected);
+
+
+		updateHazardLegend(closuresFL);
+	  }
+	});
+
 	// function to check if any legend layers are visible
 	function updateLegendVisibility() {
 	  const hasVisibleLayers = legend.layerInfos.some(info => {
@@ -263,9 +471,38 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	// Initial check
 	updateLegendVisibility();
 	
+	// Dynamically manage legend layers
+	function updateLegendLayer(layer, isChecked) {
+		const alreadyInLegend = legend.layerInfos.some(info => info.layer === layer);
+
+	if (isChecked && !alreadyInLegend) {
+		legend.layerInfos.push({ layer: layer });
+	} else if (!isChecked && alreadyInLegend) {
+		legend.layerInfos = legend.layerInfos.filter(info => info.layer !== layer);
+	}
+}
+
+	// Setup toggle behavior for a given layer and checkbox
+	function setupLayerToggle(layer, checkboxId) {
+		const checkbox = document.getElementById(checkboxId);
+
+	// Initial toggle state
+	checkbox.checked = layer.visible;
+
+	checkbox.addEventListener("change", function () {
+		layer.visible = this.checked;
+		updateLegendLayer(layer, this.checked);
+		updateLegendVisibility();
+	});
+}
+
+
+	
 	routesFL.queryFeatureCount().then(count => {
   	console.log("Routes feature count:", count);
 });
+	
+/////////////////////////////////////////////////////////////////////////////////////
 
 	// Create the dropdown element
 	const odRouteSelect = document.createElement("select");
@@ -346,7 +583,7 @@ routesFL.when(() => {
 
       const lineSymbol = document.createElement("div");
       lineSymbol.className = "line-symbol";
-      lineSymbol.style.backgroundColor = routeRankingStyles[val] || "#999"; // fallback color
+      lineSymbol.style.backgroundColor = routeRankingStyles[val] || "#999";
 
       const label = document.createElement("label");
       label.htmlFor = checkbox.id;
@@ -395,8 +632,7 @@ routesFL.when(() => {
 
 	  updateRouteFilter();
 	});
-
-
+	
 function updateRouteFilter() {
   const checkboxes = document.querySelectorAll("#routeRankingCheckboxes input[type=checkbox]");
   const selectedOptions = Array.from(checkboxes)
@@ -488,8 +724,4 @@ function updateRouteFilter() {
   }
 }
 
-
-
-	
-	
 });

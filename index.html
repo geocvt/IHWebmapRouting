@@ -10,7 +10,7 @@
 	-->
 	<script src="https://js.arcgis.com/4.23/"></script>
     <script>
-      require(["esri/config","esri/Map", "esri/views/MapView"], function (esriConfig,Map, MapView) {
+      require(["esri/config","esri/Map", "esri/views/MapView","esri/layers/TileLayer" ], function (esriConfig,Map, MapView, TileLayer) {
 
       });
     </script>
@@ -66,6 +66,18 @@
 
         </div>
       </div>
+      
+      <select id="hazardSelector">
+        <option value="">--  Visualise Hazards Dropdown --</option>
+        <option value="flood">Flood (Full Layer)</option>
+        <option value="Grand_Total">Closures: All Road Closures (2006 - 2024) </option>
+        <option value="Fire_Rollup">Closures: Wildfire </option>
+        <option value="Flooding_Rollup">Closures: Flooding</option>
+        <option value="Landslide_Rollup">Closures: Landslide</option>
+        <option value="Smoke_Rollup">Closures: Smoke </option>
+        <option value="Snow_Avalanche_Cold_Rollup">Closures: Snow/Avalanche/Cold</option>
+      </select>
+
     </div>
 
     <!-- Right Map Panel -->
