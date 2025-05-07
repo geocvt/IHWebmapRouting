@@ -13,6 +13,8 @@
       require(["esri/config","esri/Map", "esri/views/MapView","esri/layers/TileLayer" ], function (esriConfig,Map, MapView, TileLayer) {
 
       });
+      
+
     </script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
 
@@ -69,7 +71,7 @@
       
       <select id="hazardSelector">
         <option value="">--  Visualise Hazards Dropdown --</option>
-        <option value="flood">Flood (Full Layer)</option>
+        <option value="flood">Modelled Flood Hazard</option>
         <option value="Grand_Total">Closures: All Road Closures (2006 - 2024) </option>
         <option value="Fire_Rollup">Closures: Wildfire </option>
         <option value="Flooding_Rollup">Closures: Flooding</option>
@@ -77,7 +79,12 @@
         <option value="Smoke_Rollup">Closures: Smoke </option>
         <option value="Snow_Avalanche_Cold_Rollup">Closures: Snow/Avalanche/Cold</option>
       </select>
-
+      
+      
+      <div id="hazardDescription" style="display: none;">
+        <p id="hazardDescriptionText"></p>
+      </div>
+      
     </div>
 
     <!-- Right Map Panel -->
@@ -88,5 +95,32 @@
 
   <script src="config.js"></script>
   <script src="script.js"></script>
+  <script>
+    const hazardDescriptions = {
+    flood: "Modelled Flood Hazard (200 year return period) representing inundation along the river network. Sourced: Copernicus Emergency Managment Service",
+    Grand_Total: "This layer displays all reported road closures from 2006 to 2024, providing a cumulative view of transportation disruptions.",
+    Fire_Rollup: "Road closures related to fire-related events, focuses on routes impacted during peak fire seasons.",
+    Flooding_Rollup: "Flooding closure data tracks road closures specifically due to flood events, which can help assess seasonal route vulnerability.",
+    Landslide_Rollup: "Landslide closures reflect areas where road access has been blocked due to terrain instability or slope failures.",
+    Smoke_Rollup: "Smoke closures show regions where roadways were closed due to hazardous air quality or low visibility from wildfire smoke. As you can see, these types of closures are less frequent",
+    Snow_Avalanche_Cold_Rollup: "This layer identifies closures caused by snow, avalanches, or extreme cold, particularly affecting mountain passes and high-elevation routes."
+  };
+
+  const hazardSelect = document.getElementById("hazardSelector");
+  const hazardDescriptionBox = document.getElementById("hazardDescription");
+  const hazardDescriptionText = document.getElementById("hazardDescriptionText");
+
+  hazardSelect.addEventListener("change", function() {
+    const selectedValue = hazardSelect.value;
+
+    if (hazardDescriptions[selectedValue]) {
+      hazardDescriptionText.textContent = hazardDescriptions[selectedValue];
+      hazardDescriptionBox.style.display = "block";
+    } else {
+      hazardDescriptionBox.style.display = "none";
+      hazardDescriptionText.textContent = "";
+    }
+  });
+  </script>
 </body>
 
