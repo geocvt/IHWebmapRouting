@@ -28,8 +28,8 @@
     <!-- Left Info Panel -->
     <div id="leftPanel">
     <div class="title-container">
-      <h3 id="title">Interior Health’s Climate-Hazard Mapping Dashboard</h3>
-      <h5 id="subtitle">Assessing Impacts to Delivery Routes in Pharmacy Services</h5>
+      <h3 id="title">Operational Readiness: Pharmacy</h3>
+      <h5 id="subtitle">Climate Hazards and Delivery Routes Impacts</h5>
     </div>
 
 
@@ -45,17 +45,16 @@
         </p>
       </div>
 
+      <!-- Legend -->
+      <div id="legendContainer"></div>
 
       <!-- Dropdowns -->
       <div id="dropdownContainer">
-        <label for="originSelect"><strong>1. Select Origin Facility:</strong></label><br>
-        <select id="originSelect" style="width: 100%; margin-bottom: 10px;"></select><br>
-
-        <label for="destinationSelect"><strong>2. Select Destination Facility:</strong></label><br>
-        <select id="destinationSelect" style="width: 100%; margin-bottom: 15px;" disabled></select><br>
+        <label for="odRouteSelect"><strong>Select Facility Route:</strong></label><br>
+        <select id="odRouteSelect" style="width: 100%; margin-bottom: 15px;"></select><br>
 
         <div id="routeRankingContainer">
-          <label><strong>3. Filter Route Options:</strong></label>
+          <label><strong>Filter Route Options:</strong></label>
           <div id="routeRankingCheckboxes"></div>
           <div class="checkbox-container">
             
@@ -70,30 +69,23 @@
         </div>
       </div>
       
-      <!-- Hazard Dropdown for Closure Rollups -->
-      <div id="hazardOptionsContainer">
-        <label for="hazardSelector"><strong>4. Visualise Natural Disaster Related Road Closure Events:</strong></label>
-        <select id="hazardSelector">
-          <option value="">Select Closure Type - None Selected</option>
-          <option value="Grand_Total">Closures: All Road Closures (2006 - 2024)</option>
-          <option value="Fire_Rollup">Closures: Wildfire</option>
-          <option value="Flooding_Rollup">Closures: Flooding</option>
-          <option value="Landslide_Rollup">Closures: Landslide</option>
-          <option value="Smoke_Rollup">Closures: Smoke</option>
-          <option value="Snow_Avalanche_Cold_Rollup">Closures: Snow/Avalanche/Cold</option>
-        </select>
-
-        <div class="hazard-subsection">
-          <label><strong>5. Overlay Hazard Areas and Historic Natural Disaster Areas:</strong></label>
-          <div class="hazard-checkbox-group">
-            <label><input type="checkbox" id="chkFlood" value="flood"> Modelled Flood Hazard</label>
-            <label><input type="checkbox" id="chkLandslide" value="landslide"> Historic Landslides</label>
-            <label><input type="checkbox" id="chkWildfire" value="wildfire"> Historic Wildfire Burn Areas</label>
-          </div>
-        </div>
-
+      <div id="hazardSelectorContainer">
+      <select id="hazardSelector">
+        <option value="">--  Visualise Hazards Dropdown --</option>
+        <option value="flood">Modelled Flood Hazard</option>
+        <option value="Grand_Total">Closures: All Road Closures (2006 - 2024) </option>
+        <option value="Fire_Rollup">Closures: Wildfire </option>
+        <option value="Flooding_Rollup">Closures: Flooding</option>
+        <option value="Landslide_Rollup">Closures: Landslide</option>
+        <option value="Smoke_Rollup">Closures: Smoke </option>
+        <option value="Snow_Avalanche_Cold_Rollup">Closures: Snow/Avalanche/Cold</option>
+        <!--
+        <option value="landslideFL">Landslide Hazard Layer</option>
+        <option value="wildfireFL">Historic Wildfire Layer</option>  
+        -->
+      </select>
       </div>
-
+      
       <div id="hazardDescription" style="display: none;">
         <p id="hazardDescriptionText"></p>
       </div>
@@ -103,7 +95,6 @@
     <!-- Right Map Panel -->
     <div id="rightPanel">
       <div id="viewDiv"></div>
-      <div id="legendContainer" class="floating-legend"></div>
     </div>
   </div>
 
@@ -112,16 +103,29 @@
   <script>
     const hazardDescriptions = {
     flood: "Modelled Flood Hazard (200 year return period) representing inundation along the river network. Sourced: Copernicus Emergency Managment Service",
-    landslide: "Historic landslide polygons compiled from the Preliminary Canadian Landslide Database indicate past terrain failures. While the data attributes landslide locations as data points, this layer is displayed as a measure of density of landslide locations. The colors get smoother or more detailed when you zoom in or out",
-    wildfire: "Historical wildfire burn areas recorded between 2015–2023, showing extent of past fire impact zones.",
-    Grand_Total: "All Road Closures: This layer displays all reported road closures from 2006 to 2024, providing a cumulative view of transportation disruptions.",
+    Grand_Total: "This layer displays all reported road closures from 2006 to 2024, providing a cumulative view of transportation disruptions.",
     Fire_Rollup: "Road closures related to fire-related events, focuses on routes impacted during peak fire seasons.",
-    Flooding_Rollup: "Flooding roadclosure data tracks road closures specifically due to flood events, which can help assess seasonal route vulnerability.",
+    Flooding_Rollup: "Flooding closure data tracks road closures specifically due to flood events, which can help assess seasonal route vulnerability.",
     Landslide_Rollup: "Landslide closures reflect areas where road access has been blocked due to terrain instability or slope failures.",
     Smoke_Rollup: "Smoke closures show regions where roadways were closed due to hazardous air quality or low visibility from wildfire smoke. As you can see, these types of closures are less frequent",
     Snow_Avalanche_Cold_Rollup: "This layer identifies closures caused by snow, avalanches, or extreme cold, particularly affecting mountain passes and high-elevation routes."
   };
 
+  const hazardSelect = document.getElementById("hazardSelector");
+  const hazardDescriptionBox = document.getElementById("hazardDescription");
+  const hazardDescriptionText = document.getElementById("hazardDescriptionText");
+
+  hazardSelect.addEventListener("change", function() {
+    const selectedValue = hazardSelect.value;
+
+    if (hazardDescriptions[selectedValue]) {
+      hazardDescriptionText.textContent = hazardDescriptions[selectedValue];
+      hazardDescriptionBox.style.display = "block";
+    } else {
+      hazardDescriptionBox.style.display = "none";
+      hazardDescriptionText.textContent = "";
+    }
+  });
   </script>
 </body>
 

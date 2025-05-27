@@ -40,17 +40,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
   maxScale: 0, //  can overzoom tiles
   rotationEnabled: false // Disables map rotation
 };
-	//initalise first so that its under the routesFL layer
-	var closuresFL = new FeatureLayer({
-		portalItem:{id:closuresPortalID },
-		popupEnabled:false,
-		legendEnabled: true,
-  		title: "",
-		visible: false
-	});
-	
-	view.map.add(closuresFL);
-	
+
+
 	//Routes symbology
 	const routesRenderer = {
 	type: "unique-value",  //  UniqueValueRenderer() for symbology
@@ -69,7 +60,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	  value: "Direct Route if critical area closed (second best option)",
 	  symbol: {
 		type: "simple-line",
-		color: "#6677CD",  // bluepruple
+		color: "#efd647",  // yellow/orange
 		width: 2,
 		style: "solid"
 	  }
@@ -229,7 +220,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 			width: "12px",
 			height: "12px"
 		},
-		label: "Most Critical Point - Causing Longest Reroute" 
+		label: "Critical Point - Causing Longest Reroute" 
 	};
 	//Load in barriers
 	var barriersFL = new FeatureLayer({
@@ -297,26 +288,16 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	
 	view.map.add(floodFL);
 	
-	var wildfireFL = new FeatureLayer({
-	  portalItem: { id: wildfirePortalID },
-	  popupEnabled: true,
-	  legendEnabled: true,
-	  title: "",
-	  visible: false,
-	  popupTemplate: {
-		title: "Wildfire Area for - {FIRE_YEAR}",
-		content: [
-		  {
-			type: "text",
-			text: `
-			  <b>Fire Year:</b> {FIRE_YEAR}<br>`
-		  }
-		]
-	  }
-	});
-
 	
-	view.map.add(wildfireFL);
+	var closuresFL = new FeatureLayer({
+		portalItem:{id:closuresPortalID },
+		popupEnabled:false,
+		legendEnabled: true,
+  		title: "",
+		visible: false
+	});
+	
+	view.map.add(closuresFL);
 	
 	//Load in landslide data
 	var landslideFL = new FeatureLayer({
@@ -329,15 +310,35 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	
 	view.map.add(landslideFL);
 
-	var boundaryFL = new FeatureLayer({
-		portalItem:{id:boundaryPortalID },
-		popupEnabled:false,
-		legendEnabled: true,
-  		title: "",
-		visible: true
+	var wildfireFL = new FeatureLayer({
+	  portalItem: { id: wildfirePortalID },
+	  popupEnabled: true,
+	  legendEnabled: true,
+	  title: "",
+	  visible: false,
+	  popupTemplate: {
+		title: "Wildfire Area - {FIRE_YEAR}",
+		expressionInfos: [
+		  {
+			name: "area_ha",
+			title: "Area (ha)",
+			expression: "Round($feature.Shape__Area / 10000)"
+		  }
+		],
+		content: [
+		  {
+			type: "text",
+			text: `
+			  <b>Fire Year:</b> {FIRE_YEAR}<br>
+			  <b>Area:</b> {expression/area_ha} hectares
+			`
+		  }
+		]
+	  }
 	});
+
 	
-	view.map.add(boundaryFL);
+	view.map.add(wildfireFL);
 
 	const legend = new Legend({
 		view: view,
@@ -361,8 +362,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		},	
 		{
 			layer: wildfireFL
-		},
-			{layer: boundaryFL}
+		}
 		  // Don't include routesFL here so that it doesnt show up in the legend
 		]
 	  });
@@ -415,17 +415,9 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		}
 
 		const colors = [
-		  "rgba(255, 255, 178, 0.8)", // pale yellow
-		  "rgba(254, 217, 118, 0.8)", // soft yellow-orange
-		  "rgba(254, 178, 76, 0.8)",  // orange
-		  "rgba(253, 141, 60, 0.8)",  // orange-red
-		  "rgba(252, 78, 42, 0.8)",   // strong red-orange
-		  "rgba(227, 26, 28, 0.8)",   // red
-		  "rgba(189, 0, 38, 0.8)",    // deep red
-		  "rgba(128, 0, 38, 0.8)"     // dark red
+		  "#f2e5f7", "#e3cbe9", "#d4b1db", "#c596cd",
+		  "#b67cbf", "#a762b1", "#9848a3", "#a414b4"
 		];
-
-
 
 		const classBreakInfos = [];
 		for (let i = 0; i < uniqueBreaks.length - 1; i++) {
@@ -437,7 +429,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 			symbol: {
 			  type: "simple-line",
 			  color: colors[i % colors.length],
-			  width: 4 + i  // progressively thicker
+			  width: 1.5 + i  // progressively thicker
 			},
 			label: `${min} – ${max}`
 		  });
@@ -601,83 +593,58 @@ setupHazardCheckbox("chkWildfire", wildfireFL, "wildfire");
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-	let selectedODRoute = null;
+	// Create the dropdown element
+	const odRouteSelect = document.createElement("select");
+	odRouteSelect.id = "odRouteSelect";
+	document.body.appendChild(odRouteSelect);
 
-	let selectedOrigin = null;
-	let selectedDestination = null;
 
-	// Store a dictionary of origin -> [destinations]
-	const odLookup = {};
-
-	routesFL.when(() => {
-	  const query = routesFL.createQuery();
-	  query.outFields = ["OD_Route"];
-	  query.returnDistinctValues = true;
-	  query.where = "1=1";
-
-	  routesFL.queryFeatures(query).then((results) => {
-		const odRoutes = [...new Set(results.features.map(f => f.attributes.OD_Route))];
-		const originSelect = document.getElementById("originSelect");
-		const destinationSelect = document.getElementById("destinationSelect");
-
-		// Build lookup
-		odRoutes.forEach(route => {
-		  const [origin, destination] = route.split(" - ").map(s => s.trim());
-		  if (!odLookup[origin]) odLookup[origin] = new Set();
-		  odLookup[origin].add(destination);
-		});
-
-		// Populate origin dropdown
-		Object.keys(odLookup).sort().forEach(origin => {
+	// Function to get unique OD_Route values
+	function getUniqueODRoutes() {
+	  routesFL.queryFeatures({
+		where: "1=1",
+		outFields: ["OD_Route"],
+		returnDistinctValues: true,
+		returnGeometry: false
+	  }).then(function(response) {
+		const odRoutes = response.features.map(f => f.attributes.OD_Route);
+		const uniqueODRoutes = [...new Set(odRoutes)].sort();
+		const odRouteSelect = document.getElementById("odRouteSelect");
+		uniqueODRoutes.forEach(function(route) {
 		  const option = document.createElement("option");
-		  option.value = origin;
-		  option.textContent = origin;
-		  originSelect.appendChild(option);
+		  option.value = route;
+		  option.text = route;
+		  odRouteSelect.add(option);
 		});
 	  });
-	});
+	}
+	let selectedODRoute = null;
 
-// Handle origin change
-document.getElementById("originSelect").addEventListener("change", function () {
-  selectedOrigin = this.value;
-  selectedDestination = null;
+  // Populate OD_Route Dropdown
+  routesFL.when(() => {
+    const query = routesFL.createQuery();
+    query.outFields = ["OD_Route"];
+    query.returnDistinctValues = true;
+    query.where = "1=1";
 
-  const destinationSelect = document.getElementById("destinationSelect");
-  destinationSelect.innerHTML = ""; // Clear
-  destinationSelect.disabled = true;
+    routesFL.queryFeatures(query).then((results) => {
+      const odValues = [...new Set(results.features.map(f => f.attributes.OD_Route))];
+      const odDropdown = document.getElementById("odRouteSelect");
 
-  if (odLookup[selectedOrigin]) {
-    Array.from(odLookup[selectedOrigin])
-      .sort()
-      .forEach(dest => {
-        const opt = document.createElement("option");
-        opt.value = dest;
-        opt.textContent = dest;
-        destinationSelect.appendChild(opt);
+      odValues.sort().forEach(val => {
+        const option = document.createElement("option");
+        option.value = val;
+        option.textContent = val;
+        odDropdown.appendChild(option);
       });
-    destinationSelect.disabled = false;
-  }
-});
-
-// Handle destination change
-document.getElementById("destinationSelect").addEventListener("change", function () {
-  selectedDestination = this.value;
-
-  if (selectedOrigin && selectedDestination) {
-    const fullRoute = `${selectedOrigin} - ${selectedDestination}`;
-    selectedODRoute = fullRoute;
-
-    // Trigger route + facility logic
-    applyODRoute(fullRoute);
-  }
-});
-
+    });
+  });
 
 // Populate Route_Ranking Dropdown
 // Define route ranking styles
 const routeRankingStyles = {
   "Business as usual route (best option)": "#0fb443",  // green
-  "Direct Route if critical area closed (second best option)": "#6677CD",  // purple
+  "Direct Route if critical area closed (second best option)": "#efd647",  // yellow
   "Reroute if both critical areas are closed (third option)": "#98282a"   // red
 };
 
@@ -756,37 +723,6 @@ routesFL.when(() => {
 	  updateRouteFilter();
 	});
 	
-function applyODRoute(route) {
-  // Clear barriers and facilities
-  barriersFL.definitionExpression = "1=0";
-  barriersFL.visible = false;
-  barriersFL.refresh();
-
-  facilitiesFL.definitionExpression = "1=0";
-  facilitiesFL.refresh();
-  facilitiesFL.labelsVisible = false;
-
-  routesFL.definitionExpression = "1=0";
-  routesFL.refresh();
-
-  setTimeout(() => {
-    facilitiesFL.definitionExpression = `OD_Route = '${route}'`;
-    facilitiesFL.refresh();
-    facilitiesFL.visible = true;
-    facilitiesFL.labelsVisible = true;
-  }, 100);
-
-  const query = routesFL.createQuery();
-  query.where = `OD_Route = '${route}'`;
-  routesFL.queryExtent(query).then(function(response) {
-    if (response.extent) {
-      view.goTo(response.extent.expand(1.2));
-    }
-  });
-
-  updateRouteFilter();
-}
-	
 function updateRouteFilter() {
   const checkboxes = document.querySelectorAll("#routeRankingCheckboxes input[type=checkbox]");
   const selectedOptions = Array.from(checkboxes)
@@ -836,14 +772,13 @@ function updateRouteFilter() {
       const tbody = document.createElement("tbody");
       features.forEach(f => {
         const ranking = f.attributes.Route_Ranking;
-		const displayRanking = routeRankingDisplayNames[ranking] || ranking;
         const length_km = (f.attributes.RouteLength_KM).toFixed(1);
 
         if (!displayedRankings.has(ranking)) {
           const row = document.createElement("tr");
 
           const rankingCell = document.createElement("td");
-          rankingCell.textContent = displayRanking;
+          rankingCell.textContent = ranking;
           rankingCell.style.color = routeRankingStyles[ranking] || "#333";
 
           const lengthCell = document.createElement("td");

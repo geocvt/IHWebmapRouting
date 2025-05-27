@@ -1,0 +1,239 @@
+/* Full viewport layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* prevents scrollbars */
+  font-family: Calibri, sans-serif;
+}
+
+#appContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+/* Left panel (info area) */
+#leftPanel {
+  width: 30%;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
+  overflow-y: auto;
+}
+
+/* Right panel (map area) */
+#rightPanel {
+  width: 70%;
+  height: 100%;
+  position: relative;
+}
+
+/* Map container */
+#viewDiv {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.title-container {
+  background-color: #164d81; /* soft blue */
+  padding: 16px;
+  border-radius: 12px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+#title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bolder;
+  color: white; /* darker blue text */
+}
+
+#subtitle {
+  margin: 8px 0 0 0;
+  font-size: 17px;
+  font-weight: normal;
+  color: white;
+}
+
+/* Instruction styling */
+#instructions {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  margin-bottom: 16px;
+  color: #164d81;
+}
+
+/* Dropdown container */
+#dropdownContainer {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  margin-top: 16px;
+  color: #164d81;
+}
+
+/* Legend */
+#legendContainer {
+  margin-top: 16px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  color: #164d81;
+}
+
+/* Checkbox container  */
+.route-filter-container {
+  padding: 10px;
+  border-radius: 6px;
+  background: none;
+  box-shadow: none;
+  border: none;
+  color: #164d81;
+}
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.checkbox-wrapper input[type="checkbox"] {
+  margin-right: 6px;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #666;
+  border-radius: 3px;
+  background-color: white;
+  position: relative;
+  cursor: pointer;
+}
+.checkbox-wrapper input[type="checkbox"]:checked::before {
+  content: "✓";
+  color: black;
+  font-size: 14px;
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+.checkbox-wrapper label {
+  font-size: 13px;
+  cursor: pointer;
+}
+.line-symbol {
+  width: 30px;
+  height: 3px;
+  margin-left: 8px;
+  background-color: gray;
+  flex-shrink: 0;
+}
+.route-summary-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9em;
+  margin-top: 8px;
+}
+
+.route-summary-table th,
+.route-summary-table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+}
+
+.route-summary-table th {
+  background-color: #f5f5f5;
+}
+
+/* Align table column to the right */
+.route-summary-table td:first-child,
+.route-summary-table th:first-child {
+  text-align: left;
+}
+
+/* Align the second column (Length) to the center */
+.route-summary-table td:nth-child(2),
+.route-summary-table th:nth-child(2) {
+  text-align: center;
+}
+/* Hazard Selector */
+#hazardSelector {
+  background: white;
+  padding: 16px 6px;  /* Ensures consistent padding with the other containers */
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Same drop shadow as the other containers */
+  margin-top: 16px;
+  color: #164d81; /* Same blue as your other containers */
+  font-size: 12px;
+  width: 100%; /* Ensures full width of the left panel */
+  box-sizing: border-box; /* Includes padding in the total width calculation */
+  border: none; /* Remove the black outline */
+}
+
+#hazardSelector select {
+  width: 100%;
+  padding: 36px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  color: #164d81;
+  font-size: 14px;
+  box-sizing: border-box; 
+  
+}
+
+#hazardSelector select:focus {
+  outline: none; 
+  border-color: #164d81; 
+  box-shadow: 0 0 5px rgba(22, 77, 129, 0.5); 
+}
+
+#hazardSelector option {
+  background-color: #f9f9f9;
+  color: #164d81;
+}
+
+/* Hover and focus for select */
+#hazardSelector select:hover,
+#hazardSelector select:focus {
+  border-color: #164d81; 
+}
+
+/* Container for the hazard options */
+#hazardSelector .hazard-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#hazardSelector .hazard-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Floating Hazard Description Box */
+#hazardDescription {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 15px;
+  color: #164d81;
+  font-size: 14px;
+  z-index: 1000; /* Make sure it floats above map */
+}
+
+#hazardDescription p {
+  margin: 0;
+}
