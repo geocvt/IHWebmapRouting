@@ -50,6 +50,47 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	});
 	
 	view.map.add(closuresFL);
+		//Load in barriers 1
+	var barriers1FL = new FeatureLayer({
+		portalItem:{id: barriers1PortalID},
+		popupEnabled:false,
+		legendEnabled: true,
+  		title: "Density of Cirtical Road Segments - contributing to secondary routing",
+		visible: false
+	});
+	
+	view.map.add(barriers1FL);
+	
+	//Load in barriers 2
+	var barriers2FL = new FeatureLayer({
+		portalItem:{id: barriers2PortalID},
+		popupEnabled:false,
+		legendEnabled: true,
+  		title: "Density of Cirtical Road Segments - contributing to tertiary routing",
+		visible: false
+	});
+	
+	view.map.add(barriers2FL);
+
+	const pinkHeatmap = {
+	  type: "heatmap",
+	  // leave field:null for “point count” heat-density
+	  colorStops: [
+		{ ratio: 0,   color: "rgba(255,255,255,0)"   }, // fully transparent
+		{ ratio: 0.2, color: "rgba(255,240,240,0.6)" }, // very pale pink
+		{ ratio: 0.4, color: "rgba(255,200,200,0.7)" },
+		{ ratio: 0.6, color: "rgba(255,160,160,0.8)" },
+		{ ratio: 0.8, color: "rgba(255, 80,120,0.9)" },
+		{ ratio: 1,   color: "rgba(200,  0, 80,1)"   }  // deep pink
+	  ],
+	  // clamp the intensity to the “sweet spot” of your route
+	  // you can tweak maxPixelIntensity up or down to make it brighter
+	  minPixelIntensity: 0,
+	  maxPixelIntensity: 50  
+	};
+
+	barriers1FL.renderer = pinkHeatmap;
+	barriers2FL.renderer = pinkHeatmap;
 	
 	//Routes symbology
 	const routesRenderer = {
@@ -343,26 +384,13 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		view: view,
 		container: "legendContainer",
 		layerInfos: [
-		  {
-			layer: barriersFL,
-		  },
-		  {
-			layer: facilitiesFL,
-		  },
-		{
-			layer: floodFL,
-		  },
-	
-		{
-			layer: closuresFL,
-		},
-		{
-			layer: landslideFL,
-		},	
-		{
-			layer: wildfireFL
-		},
-			{layer: boundaryFL}
+		  {layer: barriersFL,},
+		  {layer: facilitiesFL,},
+			{layer: floodFL,},
+		{layer: closuresFL,},
+		{layer: landslideFL,},	
+		{layer: wildfireFL},
+		{layer: boundaryFL,},
 		  // Don't include routesFL here so that it doesnt show up in the legend
 		]
 	  });
@@ -511,8 +539,6 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		updateHazardDescriptions(); 
 	});
 
-
-
 	// function to check if any legend layers are visible
 	function updateLegendVisibility() {
 	  const hasVisibleLayers = legend.layerInfos.some(info => {
@@ -581,6 +607,52 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	  legend.layerInfos = currentLayers;  // Reassign to trigger reactivity
 	  legend.scheduleRender();            // Ensure UI refresh
 	}
+	
+			
+	function wireBarrierContainers() {
+	  const rrCheckboxes = document.querySelectorAll(".route-ranking-checkbox");
+
+	  // find the two ranking checkboxes by value
+	  const secRR = [...rrCheckboxes].find(cb =>
+		cb.value === "Direct Route if critical area closed (second best option)"
+	  );
+	  const terRR = [...rrCheckboxes].find(cb =>
+		cb.value === "Reroute if both critical areas are closed (third option)"
+	  );
+
+	  const secContainer = document.getElementById("secondaryBarrierContainer");
+	  const terContainer = document.getElementById("tertiaryBarrierContainer");
+
+	  if (secRR) {
+		secRR.addEventListener("change", () => {
+		  if (secRR.checked) {
+			secContainer.style.display = "flex";
+		  } else {
+			// hide & reset
+			secContainer.style.display = "none";
+			document.getElementById("chkBarriers1").checked = false;
+			barriers1FL.visible = false;
+			updateLegendLayer(barriers1FL, false);
+			updateLegendVisibility();
+		  }
+		});
+	  }
+
+	  if (terRR) {
+		terRR.addEventListener("change", () => {
+		  if (terRR.checked) {
+			terContainer.style.display = "flex";
+		  } else {
+			// hide & reset
+			terContainer.style.display = "none";
+			document.getElementById("chkBarriers2").checked = false;
+			barriers2FL.visible = false;
+			updateLegendLayer(barriers2FL, false);
+			updateLegendVisibility();
+		  }
+		});
+	  }
+	}
 	// Enhanced checkbox setup with description updates
 	function setupHazardCheckbox(id, layer, descriptionKey) {
 	  const checkbox = document.getElementById(id);
@@ -601,77 +673,77 @@ setupHazardCheckbox("chkWildfire", wildfireFL, "wildfire");
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-	let selectedODRoute = null;
-
-	let selectedOrigin = null;
-	let selectedDestination = null;
 
 	// Store a dictionary of origin -> [destinations]
 	const odLookup = {};
 
+	// ① Build odLookup & populate the origin dropdown
 	routesFL.when(() => {
 	  const query = routesFL.createQuery();
 	  query.outFields = ["OD_Route"];
 	  query.returnDistinctValues = true;
 	  query.where = "1=1";
 
-	  routesFL.queryFeatures(query).then((results) => {
-		const odRoutes = [...new Set(results.features.map(f => f.attributes.OD_Route))];
-		const originSelect = document.getElementById("originSelect");
-		const destinationSelect = document.getElementById("destinationSelect");
-
-		// Build lookup
-		odRoutes.forEach(route => {
-		  const [origin, destination] = route.split(" - ").map(s => s.trim());
-		  if (!odLookup[origin]) odLookup[origin] = new Set();
-		  odLookup[origin].add(destination);
+	  routesFL.queryFeatures(query).then(results => {
+		// build origin→destination map
+		const odLookup = {};
+		results.features.forEach(f => {
+		  const [orig, dest] = f.attributes.OD_Route.split(" - ").map(s => s.trim());
+		  odLookup[orig] = odLookup[orig] || new Set();
+		  odLookup[orig].add(dest);
 		});
 
-		// Populate origin dropdown
-		Object.keys(odLookup).sort().forEach(origin => {
-		  const option = document.createElement("option");
-		  option.value = origin;
-		  option.textContent = origin;
-		  originSelect.appendChild(option);
+		// cache for later
+		window.odLookup = odLookup;
+
+		// get the selects
+		const originSelect      = document.getElementById("originSelect");
+		const destinationSelect = document.getElementById("destinationSelect");
+
+		// reset and add placeholders
+		originSelect.innerHTML      = `<option value="">— Select Origin Facility —</option>`;
+		destinationSelect.innerHTML = `<option value="">— Select Destination Facility —</option>`;
+		destinationSelect.disabled  = true;
+
+		// append real origins
+		Object.keys(odLookup).sort().forEach(orig => {
+		  const opt = document.createElement("option");
+		  opt.value = orig;
+		  opt.text  = orig;
+		  originSelect.appendChild(opt);
 		});
 	  });
 	});
+// ② When the user picks an origin
+	const destinationSelect = document.getElementById("destinationSelect");
+	document.getElementById("originSelect").addEventListener("change", function() {
+	  const origin = this.value;
+	  // reset destination
+	  destinationSelect.innerHTML = `<option value="">— Select Destination Facility —</option>`;
+	  destinationSelect.disabled  = true;
 
-// Handle origin change
-document.getElementById("originSelect").addEventListener("change", function () {
-  selectedOrigin = this.value;
-  selectedDestination = null;
+	  if (!origin) return;  // user picked the placeholder
 
-  const destinationSelect = document.getElementById("destinationSelect");
-  destinationSelect.innerHTML = ""; // Clear
-  destinationSelect.disabled = true;
+	  // populate the matching destinations
+	  window.odLookup[origin].forEach(dest => {
+		const opt = document.createElement("option");
+		opt.value = dest;
+		opt.text  = dest;
+		destinationSelect.appendChild(opt);
+	  });
+	  destinationSelect.disabled = false;
+	});
 
-  if (odLookup[selectedOrigin]) {
-    Array.from(odLookup[selectedOrigin])
-      .sort()
-      .forEach(dest => {
-        const opt = document.createElement("option");
-        opt.value = dest;
-        opt.textContent = dest;
-        destinationSelect.appendChild(opt);
-      });
-    destinationSelect.disabled = false;
-  }
-});
-
-// Handle destination change
-document.getElementById("destinationSelect").addEventListener("change", function () {
-  selectedDestination = this.value;
-
-  if (selectedOrigin && selectedDestination) {
-    const fullRoute = `${selectedOrigin} - ${selectedDestination}`;
-    selectedODRoute = fullRoute;
-
-    // Trigger route + facility logic
-    applyODRoute(fullRoute);
-  }
-});
-
+	// ③ When the user picks a destination
+	let selectedODRoute = null;
+	document.getElementById("destinationSelect").addEventListener("change", function() {
+	  const dest = this.value;
+	  if (!dest) return;  
+	  // Both origin & destination are now valid
+	  const origin = document.getElementById("originSelect").value;
+	  selectedODRoute = `${origin} - ${dest}`;
+	  applyODRoute(selectedODRoute);
+	});
 
 // Populate Route_Ranking Dropdown
 // Define route ranking styles
@@ -716,45 +788,23 @@ routesFL.when(() => {
       wrapper.appendChild(checkbox);
       wrapper.appendChild(label);
       rrContainer.appendChild(wrapper);
+	
     });
+	  wireBarrierContainers();
   });
+	
 });
-
-
-  // Handle OD_Route Dropdown Selection
-	document.getElementById("odRouteSelect").addEventListener("change", function () {
-	  selectedODRoute = this.value;
-
-	  // Clear barriers layer first
-	  barriersFL.definitionExpression = "1=0";
-	  barriersFL.visible = false;
-	  barriersFL.refresh();
-
-	  // Clear facilities layer
-	  facilitiesFL.definitionExpression = "1=0";
-	  facilitiesFL.refresh();
-	  facilitiesFL.labelsVisible = false;
-
-	  routesFL.definitionExpression = "1=0";
-	  routesFL.refresh();
-
-	  setTimeout(() => {
-		facilitiesFL.definitionExpression = `OD_Route = '${selectedODRoute}'`;
-		facilitiesFL.refresh();
-		facilitiesFL.visible = true;
-		facilitiesFL.labelsVisible = true;
-	  }, 100);
-
-	  const query = routesFL.createQuery();
-	  query.where = `OD_Route = '${selectedODRoute}'`;
-	  routesFL.queryExtent(query).then(function(response) {
-		if (response.extent) {
-		  view.goTo(response.extent.expand(1.2));
-		}
-	  });
-
-	  updateRouteFilter();
-	});
+function setupBarrierToggle(checkboxId, layer) {
+  const cb = document.getElementById(checkboxId);
+  cb.addEventListener("change", function() {
+    const isOn = cb.checked;
+    layer.visible = isOn;
+    updateLegendLayer(layer, isOn);
+    updateLegendVisibility();
+  });
+}
+setupBarrierToggle("chkBarriers1", barriers1FL);
+setupBarrierToggle("chkBarriers2", barriers2FL);
 	
 function applyODRoute(route) {
   // Clear barriers and facilities
@@ -863,6 +913,31 @@ function updateRouteFilter() {
       // Filter barriersFL based on Route_ID + Route_Ranking
       const routeIDs = [...new Set(features.map(f => `'${f.attributes.Route_ID.replace(/'/g, "''")}'`))];
       const routeRankings = [...new Set(features.map(f => `'${f.attributes.Route_Ranking.replace(/'/g, "''")}'`))];
+		
+		//Secondary barriers (barriers1FL) match on the "Name" field:
+		barriers1FL.definitionExpression = `Name IN (${routeIDs.join(",")})`;
+
+		//Tertiary barriers (barriers2FL) match on the "Route_ID" field:
+		barriers2FL.definitionExpression = `Route_ID IN (${routeIDs.join(",")})`;
+
+		// checkbox toggles:
+		if (document.getElementById("chkBarriers1").checked) {
+		  barriers1FL.visible = true;
+		  updateLegendLayer(barriers1FL, true);
+		} else {
+		  barriers1FL.visible = false;
+		  updateLegendLayer(barriers1FL, false);
+		}
+
+		if (document.getElementById("chkBarriers2").checked) {
+		  barriers2FL.visible = true;
+		  updateLegendLayer(barriers2FL, true);
+		} else {
+		  barriers2FL.visible = false;
+		  updateLegendLayer(barriers2FL, false);
+		}
+
+		updateLegendVisibility();
 
       if (routeIDs.length && routeRankings.length) {
         const barrierExpr = `Route_ID IN (${routeIDs.join(",")}) AND Route_Ranking IN (${routeRankings.join(",")})`;
@@ -904,4 +979,6 @@ function updateRouteFilter() {
     document.getElementById("routeSummaryList").innerHTML = "";
   }
 }
+
+
 });

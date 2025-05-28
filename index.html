@@ -34,29 +34,44 @@
 
 
       <div id="instructions">
-        <p style="font-size: 1.2em;"><strong>Welcome to the Pharmacy route vulnerability dashboard </strong></p>
-        <p style="font-size: 0.95em;">This dashboard allows you to view and explore criticality of pharmacy medication delivery routes in Interior Health. This analysis uses route mapping between three major source facilities (Kelowna General, Kelowna Warehouse, and Royal Inlands) and destination healthcare facilities throughout the health authority. 
+        <p style="font-size: 0.97em;">This dashboard allows you to view and explore criticality of pharmacy medication delivery routes in Interior Health. This analysis uses route mapping between three major source facilities (Kelowna General, Kelowna Warehouse, and Royal Inlands) and destination healthcare facilities throughout the health authority. 
 </p>
-        <p style="font-size: 0.95em;">To view routes, select an origin and destination option from the Facility Route drop-down below. 
+        <p style="font-size: 0.95em;">To view routes, select an origin and destination option from the Origin and Destination Facility drop-downs below. 
 </p>
    
         <p style="font-size: 0.95em; color: #555;">
           Then filter route options to view up to 2 alternate journeys between the selected health care facilities.
+          In addition, scroll down to visualise historic natural disaster data
         </p>
       </div>
 
 
       <!-- Dropdowns -->
       <div id="dropdownContainer">
-        <label for="originSelect"><strong>1. Select Origin Facility:</strong></label><br>
-        <select id="originSelect" style="width: 100%; margin-bottom: 10px;"></select><br>
+        <!-- Origin -->
+        <select id="originSelect" style="width: 100%; margin-bottom: 10px;">
+          <option value="">— Select Origin Facility —</option>
+        </select>
 
-        <label for="destinationSelect"><strong>2. Select Destination Facility:</strong></label><br>
-        <select id="destinationSelect" style="width: 100%; margin-bottom: 15px;" disabled></select><br>
+        <!-- Destination (initially disabled) -->
+        <select id="destinationSelect" style="width: 100%; margin-bottom: 15px;" disabled>
+          <option value="">— Select Destination Facility —</option>
+        </select>
 
         <div id="routeRankingContainer">
           <label><strong>3. Filter Route Options:</strong></label>
           <div id="routeRankingCheckboxes"></div>
+          <div id="secondaryBarrierContainer" class="checkbox-wrapper" style="display:none">
+            <input type="checkbox" id="chkBarriers1" />
+            <label for="chkBarriers1">Road Criticality for Secondary Routing</label>
+          </div>
+
+          <div id="tertiaryBarrierContainer" class="checkbox-wrapper" style="display:none">
+            <input type="checkbox" id="chkBarriers2" />
+            <label for="chkBarriers2">Road Criticality for Tertiary Routing</label>
+          </div>
+
+
           <div class="checkbox-container">
             
                     <!-- Route Summary Display -->

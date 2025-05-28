@@ -7,3 +7,5 @@ const floodingPortalID = "221886c00ab6457ea555f766ba6c660a";
 const landslidePortalID = "723da50068c9444992b39d854c4d3abd";
 const wildfirePortalID = "89600c9f40e84b3abab122d4c1c44968";
 const boundaryPortalID = "2c8c086ceb43432c8a42fe3cbd21847d";
+const barriers1PortalID = "91554fb55a834a5db284fdcf480b2f5c";
+const barriers2PortalID = "a6b83248b838423299859f76dc4d5deb";
