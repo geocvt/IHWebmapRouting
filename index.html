@@ -59,7 +59,7 @@
         </select>
 
         <div id="routeRankingContainer">
-          <label><strong>3. Filter Route Options:</strong></label>
+          <label><strong>Filter Route Options:</strong></label>
           <div id="routeRankingCheckboxes"></div>
           <div id="secondaryBarrierContainer" class="checkbox-wrapper" style="display:none">
             <input type="checkbox" id="chkBarriers1" />
@@ -87,7 +87,7 @@
       
       <!-- Hazard Dropdown for Closure Rollups -->
       <div id="hazardOptionsContainer">
-        <label for="hazardSelector"><strong>4. Visualise Natural Disaster Related Road Closure Events:</strong></label>
+        <label for="hazardSelector"><strong>Visualise Natural Disaster Related Road Closure Events:</strong></label>
         <select id="hazardSelector">
           <option value="">Select Closure Type - None Selected</option>
           <option value="Grand_Total">Closures: All Road Closures (2006 - 2024)</option>
@@ -99,7 +99,7 @@
         </select>
 
         <div class="hazard-subsection">
-          <label><strong>5. Overlay Hazard Areas and Historic Natural Disaster Areas:</strong></label>
+          <label><strong>Overlay Hazard Areas and Historic Natural Disaster Areas:</strong></label>
           <div class="hazard-checkbox-group">
             <label><input type="checkbox" id="chkFlood" value="flood"> Modelled Flood Hazard</label>
             <label><input type="checkbox" id="chkLandslide" value="landslide"> Historic Landslides</label>
@@ -126,7 +126,7 @@
   <script src="script.js"></script>
   <script>
     const hazardDescriptions = {
-    flood: "Modelled Flood Hazard (200 year return period) representing inundation along the river network. Sourced: Copernicus Emergency Managment Service",
+    flood: "Modelled Flood Hazard (200 year return period) representing inundation along the river network. Sourced: Copernicus Emergency Managment Service. Zoom into valley bottoms and riparian areas to better visualise this layer.",
     landslide: "Historic landslide polygons compiled from the Preliminary Canadian Landslide Database indicate past terrain failures. While the data attributes landslide locations as data points, this layer is displayed as a measure of density of landslide locations. The colors get smoother or more detailed when you zoom in or out",
     wildfire: "Historical wildfire burn areas recorded between 2015–2023, showing extent of past fire impact zones.",
     Grand_Total: "All Road Closures: This layer displays all reported road closures from 2006 to 2024, providing a cumulative view of transportation disruptions.",

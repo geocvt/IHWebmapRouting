@@ -287,13 +287,13 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
     //setup flood symbology
 	const floodRenderer = {
 	  type: "unique-value",
-	  field: "Id",
+	  field: "gridcode",
 	  legendOptions: {
 		title: "Flood Depth (Metres)"
 	  },
 	  uniqueValueInfos: [
 		{
-		  value: 1,
+		  value: 2,
 		  symbol: {
 			type: "simple-fill",
 			color: [3, 242, 225, 0.8],  // turquoise, RGBA with 75% opacity
@@ -303,7 +303,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		  }
 		},
 		{
-		  value: 2,
+		  value: 3,
 		  symbol: {
 			type: "simple-fill",
 			color: [128, 132, 232, 0.8],  // purple, RGBA with opacity
@@ -313,7 +313,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		  }
 		},
 		{
-		  value: 3,
+		  value: 4,
 		  symbol: {
 			type: "simple-fill",
 			color: [245, 103, 223, 0.8],  // pink, RGBA with opacity
@@ -329,11 +329,21 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	//Load in flooding layer
 	var floodFL = new FeatureLayer({
 		portalItem:{id:floodingPortalID },
-		popupEnabled:false,
+		popupEnabled:true,
 		renderer: floodRenderer,
 		legendEnabled: true,
   		title: "Modelled Flood Hazard",
-		visible: false
+		visible: false,
+		popupTemplate: {
+		title: "Modelled Flood Hazard",
+		content: [
+		  {
+			type: "text",
+			text: `
+			  <b>Flood Depth:</b> {gridcode} metres <br>`
+		  }
+		]
+	  }
 	});
 	
 	view.map.add(floodFL);
