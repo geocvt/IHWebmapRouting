@@ -55,7 +55,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		portalItem:{id: barriers1PortalID},
 		popupEnabled:false,
 		legendEnabled: true,
-  		title: "Density of Cirtical Road Segments - contributing to secondary routing",
+  		title: "Road importance relative to route - contributing to secondary routing",
 		visible: false
 	});
 	
@@ -66,7 +66,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		portalItem:{id: barriers2PortalID},
 		popupEnabled:false,
 		legendEnabled: true,
-  		title: "Density of Cirtical Road Segments - contributing to tertiary routing",
+  		title: "Road importance relative to route - contributing to tertiary routing",
 		visible: false
 	});
 	
@@ -76,8 +76,8 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	  type: "heatmap",
 	  // leave field:null for “point count” heat-density
 	  colorStops: [
-		{ ratio: 0,   color: "rgba(255,255,255,0)"   }, // fully transparent
-		{ ratio: 0.2, color: "rgba(255,240,240,0.6)" }, // very pale pink
+		{ ratio: 0,   color: "rgba(255,255,255,0.2)"   }, // fully transparent
+		{ ratio: 0.2, color: "rgba(255,240,240,0.5)" }, // very pale pink
 		{ ratio: 0.4, color: "rgba(255,200,200,0.7)" },
 		{ ratio: 0.6, color: "rgba(255,160,160,0.8)" },
 		{ ratio: 0.8, color: "rgba(255, 80,120,0.9)" },
