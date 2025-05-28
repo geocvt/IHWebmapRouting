@@ -86,7 +86,7 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 	  // clamp the intensity to the “sweet spot” of your route
 	  // you can tweak maxPixelIntensity up or down to make it brighter
 	  minPixelIntensity: 0,
-	  maxPixelIntensity: 50  
+	  maxPixelIntensity: 20  
 	};
 
 	barriers1FL.renderer = pinkHeatmap;
@@ -510,18 +510,20 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		wildfireFL.visible = false;
 	}
 
-	// Function to reset legend to only the active hazard layer
 	function updateHazardLegend(activeLayer) {
+	  // remove *only* the previous closuresFL entry
 	  legend.layerInfos = legend.layerInfos.filter(info =>
-		info.layer !== floodFL && info.layer !== closuresFL && info.layer !== landslideFL && info.layer !== wildfireFL
+		info.layer !== closuresFL
 	  );
 
+	  // if there's a new closure to show, add it back
 	  if (activeLayer) {
 		legend.layerInfos.push({ layer: activeLayer });
 	  }
 
 	  updateLegendVisibility();
 	}
+
 	
 	document.getElementById("hazardSelector").addEventListener("change", function () {
 	  const selected = this.value;

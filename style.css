@@ -128,7 +128,9 @@ html, body {
   background-color: #f9f9f9;
   color: #113455;
 }
-
+.hazard-subsection .hazard-checkbox-group label {
+  font-weight: normal !important;
+}
 /* Checkbox and Route Filter UI */
 .checkbox-wrapper {
   display: flex;
@@ -153,7 +155,7 @@ html, body {
 .checkbox-wrapper input[type="checkbox"]:checked::before {
   content: "✓";
   color: #113455;
-  font-size: 14px;
+  font-size: 15px;
   position: absolute;
   top: -2px;
   left: 2px;
@@ -253,4 +255,28 @@ html, body {
   border-top: 1px solid #ccc;
   margin-top: 12px;       /* space from the route checkboxes */
 }
+/* remove all spacing around each layer */
+.esri-legend .esri-legend__layer {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
+/* collapse the table so rows butt right up */
+.esri-legend__layer-table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  padding: 0 !important;
+}
+
+/* tighten each symbol/text row */
+.esri-legend__layer-row {
+  margin: 0 !important;
+  padding: 1px 0 !important;    /* you can go down to 1px if you like */
+  line-height: 1.5 !important;
+}
+
+/* shrink the gap in each cell */
+.esri-legend__layer-cell,
+.esri-legend__layer-cell--symbol {
+  padding: 0 9px !important;
+}
