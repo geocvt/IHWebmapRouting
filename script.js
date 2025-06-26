@@ -451,17 +451,17 @@ require(["esri/Graphic","esri/config","esri/WebMap","esri/views/MapView","esri/w
 		if (maxValue > uniqueBreaks[uniqueBreaks.length - 1]) {
 		  uniqueBreaks.push(maxValue);
 		}
-
 		const colors = [
-		  "rgba(255, 255, 178, 0.8)", // pale yellow
-		  "rgba(254, 217, 118, 0.8)", // soft yellow-orange
-		  "rgba(254, 178, 76, 0.8)",  // orange
-		  "rgba(253, 141, 60, 0.8)",  // orange-red
-		  "rgba(252, 78, 42, 0.8)",   // strong red-orange
-		  "rgba(227, 26, 28, 0.8)",   // red
-		  "rgba(189, 0, 38, 0.8)",    // deep red
-		  "rgba(128, 0, 38, 0.8)"     // dark red
+		  "rgba(254,196,79,0.8)",   // bright orange
+		  "rgba(254,153,41,0.8)",   // vivid orange
+		  "rgba(236,112,20,0.8)",   // deep orange
+		  "rgba(204,76,2,0.8)",     // burnt orange
+		  "rgba(153,52,4,0.8)",     // reddish brown
+		  "rgba(102,37,5,0.8)",     // dark red-brown
+		  "rgba(83,31,12,0.8)",     // very dark red
+		  "rgba(61,21,8,0.8)"       // almost maroon
 		];
+
 
 
 
